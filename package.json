@@ -1,0 +1,12 @@
+{
+  "name": "FixedMath",
+  "scripts": {
+    "test": "npx ts-node test/FixedTest.ts"
+  },
+  "devDependencies": {
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.5",
+    "zora": "^5.2.0",
+    "zora-reporters": "^1.4.0"
+  }
+}
