@@ -1,6 +1,6 @@
 import { hold, test, report } from "zora";
-import FixedNumber from "../src/FixedNumber";
-import FixedMath from "../src/FixedMath";
+import { FixedMath } from "../src/FixedMath";
+import { FixedNumber } from "../src/FixedNumber";
 
 class FixedTest {
   static testAll() {
@@ -65,6 +65,7 @@ class FixedTest {
     test("multiplication", (t) => {
       t.equal(new FixedNumber(0.0011).mul(0.22).toNumber(), 0.0002, "0.0011 * 0.22");
       t.equal(new FixedNumber(0.11).mul(-0.0033).toNumber(), -0.0003, "0.11 * -0.0033");
+      t.equal(new FixedNumber(-0.11).mul(-0.0033).toNumber(), 0.0003, "-0.11 * -0.0033");
     });
 
     test("division", (t) => {
@@ -87,6 +88,8 @@ class FixedTest {
       t.equal(FixedMath.sin(-1.2).toNumber(), -0.932, `sin(-1.2) = -0.932, real ${Math.sin(-1.2)}`);
       t.equal(FixedMath.cos(-1.2).toNumber(), 0.3624, `cos(-1.2) = 0.3624, real ${Math.cos(-1.2)}`);
       t.equal(FixedMath.tan(1.2).toNumber(), 2.5717, `tan(1.2) = 2.5717, real ${Math.tan(1.2)}`);
+      t.equal(FixedMath.atan(1.2).toNumber(), 0.8785, `atan(1.2) = 0.8785, real ${Math.atan(1.2)}`);
+      t.equal(FixedMath.atan2(1.2, 1).toNumber(), 0.8785, `atan2(1.2, 1) = 0.8785, real ${Math.atan2(1.2, 1)}`);
       t.equal(FixedMath.ln(1.2).toNumber(), 0.1822, `ln(1.2) = 0.1822, real ${Math.log(1.2)}`);
       t.equal(FixedMath.exp(-1.2).toNumber(), 0.3012, `exp(-1.2) = 0.3012, real ${Math.exp(-1.2)}`);
       t.equal(FixedMath.sqrt(3.3).toNumber(), 1.8165, `sqrt(3.3) = 1.8165, real ${Math.sqrt(3.3)}`);

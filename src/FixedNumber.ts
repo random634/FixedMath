@@ -1,4 +1,6 @@
-export default class FixedNumber {
+export type FixedInputType = number | string | BigInt | FixedNumber;
+
+export class FixedNumber {
   private static _DEC_PLACE: number = 4; // decimal places after point, dp
   public static get DEC_PLACE(): number {
     return FixedNumber._DEC_PLACE;
@@ -14,13 +16,21 @@ export default class FixedNumber {
     return FixedNumber._DEC_SCALE_BIG;
   }
 
-  public static new(obj: number | string | BigInt | FixedNumber) {
+  public static new(obj?: FixedInputType) {
     return new FixedNumber(obj);
   }
 
-  public bn: bigint;
+  public bn: bigint = 0n;
 
-  constructor(obj: number | string | BigInt | FixedNumber) {
+  constructor(obj?: FixedInputType) {
+    if (obj == null) {
+      return;
+    }
+
+    this.init(obj);
+  }
+
+  init(obj: FixedInputType) {
     if (obj instanceof FixedNumber) {
       this.bn = obj.bn;
       return;
@@ -74,57 +84,60 @@ export default class FixedNumber {
     return FixedNumber.new(-this.bn);
   }
 
-  add(b: number | string | BigInt | FixedNumber): FixedNumber {
+  add(b: FixedInputType): FixedNumber {
     let otherBn = this._getBn(b);
     return FixedNumber.new(this.bn + otherBn);
   }
 
-  sub(b: number | string | BigInt | FixedNumber): FixedNumber {
+  sub(b: FixedInputType): FixedNumber {
     let otherBn = this._getBn(b);
     return FixedNumber.new(this.bn - otherBn);
   }
 
-  mul(b: number | string | BigInt | FixedNumber): FixedNumber {
+  mul(b: FixedInputType): FixedNumber {
     let otherBn = this._getBn(b);
     return FixedNumber.new((this.bn * otherBn) / FixedNumber.DEC_SCALE_BIG);
   }
 
-  div(b: number | string | BigInt | FixedNumber): FixedNumber {
+  div(b: FixedInputType): FixedNumber {
     let otherBn = this._getBn(b);
+    if (otherBn == 0n) {
+      throw new Error("divide by zero");
+    }
     return FixedNumber.new((this.bn * FixedNumber.DEC_SCALE_BIG) / otherBn);
   }
 
-  eq(b: number | string | BigInt | FixedNumber): boolean {
+  eq(b: FixedInputType): boolean {
     let otherBn = this._getBn(b);
     return this.bn == otherBn;
   }
 
-  ne(b: number | string | BigInt | FixedNumber): boolean {
+  ne(b: FixedInputType): boolean {
     let otherBn = this._getBn(b);
     return this.bn != otherBn;
   }
 
-  gt(b: number | string | BigInt | FixedNumber): boolean {
+  gt(b: FixedInputType): boolean {
     let otherBn = this._getBn(b);
     return this.bn > otherBn;
   }
 
-  ge(b: number | string | BigInt | FixedNumber): boolean {
+  ge(b: FixedInputType): boolean {
     let otherBn = this._getBn(b);
     return this.bn >= otherBn;
   }
 
-  lt(b: number | string | BigInt | FixedNumber): boolean {
+  lt(b: FixedInputType): boolean {
     let otherBn = this._getBn(b);
     return this.bn < otherBn;
   }
 
-  le(b: number | string | BigInt | FixedNumber): boolean {
+  le(b: FixedInputType): boolean {
     let otherBn = this._getBn(b);
     return this.bn <= otherBn;
   }
 
-  private _getBn(b: number | string | BigInt | FixedNumber): bigint {
+  private _getBn(b: FixedInputType): bigint {
     if (b instanceof FixedNumber) {
       return b.bn;
     } else if (typeof b === "bigint") {

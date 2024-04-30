@@ -1,6 +1,6 @@
-import FixedNumber from "./FixedNumber";
+import { FixedInputType, FixedNumber } from "./FixedNumber";
 
-export default class FixedMath {
+export class FixedMath {
   static readonly ZERO: FixedNumber = FixedNumber.new(0);
   static readonly ONE: FixedNumber = FixedNumber.new(1);
   static readonly TWO: FixedNumber = FixedNumber.new(2);
@@ -31,7 +31,7 @@ export default class FixedMath {
   private static _DEBUG: boolean = true;
 
   // the sign
-  static sign(x: number | string | BigInt | FixedNumber): number {
+  static sign(x: FixedInputType): number {
     x = this._toFixedNumber(x);
     if (x.bn < 0n) {
       return -1;
@@ -40,17 +40,17 @@ export default class FixedMath {
   }
 
   // the absolute
-  static abs(x: number | string | BigInt | FixedNumber): FixedNumber {
-    x = this._toFixedNumber(x);
-    if (x.bn >= 0n) {
-      return FixedNumber.new(x);
+  static abs(x: FixedInputType): FixedNumber {
+    let xNew = this._toFixedNumber(x, true);
+    if (xNew.bn < 0n) {
+      xNew.bn = -xNew.bn;
     }
 
-    return FixedNumber.new(-x.bn);
+    return xNew;
   }
 
   // the sine
-  static sin(x: number | string | BigInt | FixedNumber): FixedNumber {
+  static sin(x: FixedInputType): FixedNumber {
     let xOrig = this._toFixedNumber(x);
     let xRound = this._round4Sine(xOrig);
     // Taylor series.
@@ -87,7 +87,7 @@ export default class FixedMath {
   }
 
   // the cosine
-  static cos(x: number | string | BigInt | FixedNumber): FixedNumber {
+  static cos(x: FixedInputType): FixedNumber {
     let xOrig = this._toFixedNumber(x);
     let xRound = this._round4Sine(xOrig);
     // Taylor series.
@@ -124,7 +124,7 @@ export default class FixedMath {
   }
 
   // the tangent
-  static tan(x: number | string | BigInt | FixedNumber): FixedNumber {
+  static tan(x: FixedInputType): FixedNumber {
     x = this._toFixedNumber(x);
     x = this._round4Tangent(x);
     let e = FixedMath.PI1_2.sub(x);
@@ -142,7 +142,7 @@ export default class FixedMath {
   }
 
   // the arc sine (or inverse sine)
-  static asin(x: number | string | BigInt | FixedNumber): FixedNumber {
+  static asin(x: FixedInputType): FixedNumber {
     x = this._toFixedNumber(x);
     if (FixedMath.abs(x).gt(FixedMath.ONE)) {
       throw new Error(`[FixedMath] asin argument must be in range [-1, 1]`);
@@ -154,7 +154,7 @@ export default class FixedMath {
   }
 
   // the arc cosine (or inverse cosine)
-  static acos(x: number | string | BigInt | FixedNumber): FixedNumber {
+  static acos(x: FixedInputType): FixedNumber {
     x = this._toFixedNumber(x);
     if (FixedMath.abs(x).gt(FixedMath.ONE)) {
       throw new Error(`[FixedMath] acos argument must be in range [-1, 1]`);
@@ -166,7 +166,7 @@ export default class FixedMath {
   }
 
   // the arc tangent (or inverse tangent)
-  static atan(x: number | string | BigInt | FixedNumber): FixedNumber {
+  static atan(x: FixedInputType): FixedNumber {
     x = this._toFixedNumber(x);
 
     // https://www.cnblogs.com/shine-lee/p/13330676.html
@@ -184,8 +184,22 @@ export default class FixedMath {
     return result;
   }
 
+  static atan2(y: FixedInputType, x: FixedInputType): FixedNumber {
+    x = this._toFixedNumber(x);
+    y = this._toFixedNumber(y);
+    if (x.eq(FixedMath.ZERO)) {
+      if (y.ge(FixedMath.ZERO)) {
+        return FixedMath.PI1_2;
+      } else {
+        return FixedMath.PI1_2.neg();
+      }
+    }
+
+    return FixedMath.atan(y.div(x));
+  }
+
   // the natural logarithm (base e)
-  static ln(y: number | string | BigInt | FixedNumber): FixedNumber {
+  static ln(y: FixedInputType): FixedNumber {
     let yOrig = this._toFixedNumber(y);
     if (yOrig.le(FixedMath.ZERO)) {
       throw new Error(`[FixedMath] ln of negative number ${yOrig.toString()}`);
@@ -235,14 +249,14 @@ export default class FixedMath {
     return result;
   }
 
-  static log2(x: number | string | BigInt | FixedNumber): FixedNumber {
+  static log2(x: FixedInputType): FixedNumber {
     // log2(x) = ln(x) / ln(2)
     let lnx = FixedMath.ln(x);
     let ln2 = FixedMath.LN2;
     return lnx.div(ln2);
   }
 
-  static log10(x: number | string | BigInt | FixedNumber): FixedNumber {
+  static log10(x: FixedInputType): FixedNumber {
     // log10(x) = ln(x) / ln(10)
     let lnx = FixedMath.ln(x);
     let ln10 = FixedMath.LN10;
@@ -250,7 +264,7 @@ export default class FixedMath {
   }
 
   // e (the base of natural logarithms) raised to a power
-  static exp(x: number | string | BigInt | FixedNumber): FixedNumber {
+  static exp(x: FixedInputType): FixedNumber {
     let xOrig = this._toFixedNumber(x);
 
     // Taylor series.
@@ -281,7 +295,7 @@ export default class FixedMath {
   }
 
   // a base expression taken to a specified power
-  static pow(x: number | string | BigInt | FixedNumber, y: number | string | BigInt | FixedNumber): FixedNumber {
+  static pow(x: FixedInputType, y: FixedInputType): FixedNumber {
     x = this._toFixedNumber(x);
     y = this._toFixedNumber(y);
     if (x.lt(FixedMath.ZERO) && y.bn % FixedNumber.DEC_SCALE_BIG != 0n) {
@@ -299,7 +313,7 @@ export default class FixedMath {
   }
 
   // the square root
-  static sqrt(x: number | string | BigInt | FixedNumber): FixedNumber {
+  static sqrt(x: FixedInputType): FixedNumber {
     x = this._toFixedNumber(x);
     if (x.bn < 0n) {
       throw new Error(`[FixedMath] sqrt square root of negative number ${x.toString()}`);
@@ -349,8 +363,11 @@ export default class FixedMath {
     return FixedNumber.new(minV);
   }
 
-  private static _toFixedNumber(x: number | string | BigInt | FixedNumber): FixedNumber {
+  private static _toFixedNumber(x: FixedInputType, forceNew: boolean = false): FixedNumber {
     if (x instanceof FixedNumber) {
+      if (forceNew) {
+        return FixedNumber.new(x);
+      }
       return x;
     }
 
